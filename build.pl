@@ -2,7 +2,6 @@
 use Modern::Perl;
 
 use File::Slurp;
-use Mojo::DOM;
 use Template;
 use Text::Markdown 'markdown';
 
@@ -24,13 +23,11 @@ for my $file (glob "article/*.mkd") {
     # Render markdown into HTML
     my $body = markdown(scalar read_file($file));
 
-    my $dom = Mojo::DOM->new($body);
-
     my $article = {
         date => $date,
         name => $name,
         url => "$date-$name.html",
-        title => $dom->at('h1')->text,
+        title => extract_title($body),
     };
 
     # Render final page
@@ -48,3 +45,16 @@ $template->process(
     { index => [ reverse sort { $a->{date} <=> $b->{date} } @index ] },
     'output/index.html'
 ) or die "error processing index.tt2: " . $template->error();
+
+
+sub extract_title {
+    my $html = shift;
+
+    for my $line (split "\n", $html) {
+        when($line =~ m|^\s*<h1>\s*(.*)\s*</h1>\s*$|) {
+            return $1;
+        }
+    }
+
+    die "could not extract title from $html";
+}
