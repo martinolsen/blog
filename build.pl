@@ -29,7 +29,7 @@ for my $file (glob "article/*.mkd") {
     my $article = {
         date => $date,
         name => $name,
-        url => "$name.html",
+        url => "$date-$name.html",
         title => $dom->at('h1')->text,
     };
 
@@ -37,7 +37,7 @@ for my $file (glob "article/*.mkd") {
     $template->process(
         'template/article.tt2',
         { body => $body, article => $article },
-        "output/$article->{name}.html"
+        "output/$date-$name.html"
     ) or die "error processing article.tt2: " . $template->error();
 
     push @index, $article;
